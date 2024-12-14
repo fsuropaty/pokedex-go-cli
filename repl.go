@@ -5,21 +5,24 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/fsuropaty/go-pokedexcli/internal/pokeapi"
 )
 
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(cfg *Config) error
+	callback    func(cfg *config) error
 }
 
-func repl() {
-	scanner := bufio.NewScanner(os.Stdin)
+type config struct {
+	pokeapiClient    pokeapi.Client
+	nextLocationsURL *string
+	prevLocationsURL *string
+}
 
-	cfg := &Config{
-		Next:     "",
-		Previous: "",
-	}
+func repl(cfg *config) {
+	scanner := bufio.NewScanner(os.Stdin)
 
 	for {
 		fmt.Print("Pokedex > ")

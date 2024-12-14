@@ -1,59 +1,44 @@
 package main
 
 import (
+	"errors"
 	"fmt"
-	"github.com/fsuropaty/go-pokedexcli/internal/pokeapi"
 )
 
-func commandMap(cfg *Config) error {
+func commandMap(cfg *config) error {
+	fmt.Println("Getting map data...")
 
-	url := "https://pokeapi.co/api/v2/location-area"
-
-	if cfg.Next != "" {
-		url = cfg.Next
-	}
-
-	client := &pokeapi.Client{}
-	locations, err := client.GetRequest(url)
+	locationsResp, err := cfg.pokeapiClient.GetLocations(cfg.nextLocationsURL)
 	if err != nil {
 		return err
 	}
 
-	cfg.Next = locations.Next
+	cfg.nextLocationsURL = locationsResp.Next
+	cfg.prevLocationsURL = locationsResp.Previous
 
-	if locations.Previous != nil {
-		cfg.Previous = *locations.Previous
-	} else {
-		cfg.Previous = ""
-	}
-
-	for _, loc := range locations.Results {
+	for _, loc := range locationsResp.Results {
 		fmt.Println(loc.Name)
 	}
 
 	return nil
 }
 
-func commandMapb(cfg *Config) error {
-	if cfg.Previous == "" {
-		fmt.Println("You are on the first page")
-		return nil
+func commandMapb(cfg *config) error {
+	fmt.Println("Getting map data...")
+
+	if cfg.prevLocationsURL == nil {
+		return errors.New("You are on first page")
 	}
 
-	client := &pokeapi.Client{}
-	locations, err := client.GetRequest(cfg.Previous)
+	locationsResp, err := cfg.pokeapiClient.GetLocations(cfg.prevLocationsURL)
 	if err != nil {
 		return err
 	}
 
-	cfg.Next = locations.Next
-	if locations.Previous != nil {
-		cfg.Previous = *locations.Previous
-	} else {
-		cfg.Previous = ""
-	}
+	cfg.nextLocationsURL = locationsResp.Next
+	cfg.prevLocationsURL = locationsResp.Previous
 
-	for _, loc := range locations.Results {
+	for _, loc := range locationsResp.Results {
 		fmt.Println(loc.Name)
 	}
 
