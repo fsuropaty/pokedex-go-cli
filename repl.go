@@ -5,21 +5,12 @@ import (
 	"fmt"
 	"os"
 	"strings"
-
-	"github.com/fsuropaty/go-pokedexcli/internal/pokeapi"
 )
 
 type cliCommand struct {
 	name        string
 	description string
 	callback    func(cfg *config) error
-}
-
-type config struct {
-	pokeapiClient    pokeapi.Client
-	nextLocationsURL *string
-	prevLocationsURL *string
-	param            *string
 }
 
 func repl(cfg *config) {
@@ -38,9 +29,9 @@ func repl(cfg *config) {
 
 		command, exists := getCommands()[commandName]
 		if exists {
-			if command.name == "explore" {
+			if command.name == "explore" || command.name == "catch" {
 				if len(words) < 2 {
-					fmt.Println("Please provide the location")
+					fmt.Printf("Please provide the parameter")
 					continue
 				}
 
@@ -72,6 +63,12 @@ func getCommands() map[string]cliCommand {
 			name:        "help",
 			description: "Display a help message",
 			callback:    commandHelp,
+		},
+
+		"catch": {
+			name:        "catch",
+			description: "Catch a Pokemon",
+			callback:    commandCatch,
 		},
 
 		"explore": {
