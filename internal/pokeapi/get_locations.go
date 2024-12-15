@@ -7,9 +7,16 @@ import (
 )
 
 func (c *Client) GetLocations(pageURL *string) (RespLocations, error) {
-	url := baseURL + "/location"
+	url := baseURL + "/location-area"
+	locations := RespLocations{}
+
 	if pageURL != nil {
 		url = *pageURL
+	}
+
+	if data, ok := c.cache.Get(url); ok {
+		err := json.Unmarshal(data, &locations)
+		return locations, err
 	}
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -30,7 +37,8 @@ func (c *Client) GetLocations(pageURL *string) (RespLocations, error) {
 		return RespLocations{}, err
 	}
 
-	locations := RespLocations{}
+	c.cache.Add(url, data)
+
 	err = json.Unmarshal(data, &locations)
 	if err != nil {
 		return RespLocations{}, err

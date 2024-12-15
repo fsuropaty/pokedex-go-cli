@@ -19,6 +19,7 @@ type config struct {
 	pokeapiClient    pokeapi.Client
 	nextLocationsURL *string
 	prevLocationsURL *string
+	param            *string
 }
 
 func repl(cfg *config) {
@@ -37,6 +38,14 @@ func repl(cfg *config) {
 
 		command, exists := getCommands()[commandName]
 		if exists {
+			if command.name == "explore" {
+				if len(words) < 2 {
+					fmt.Println("Please provide the location")
+					continue
+				}
+
+				cfg.param = &words[1]
+			}
 			err := command.callback(cfg)
 			if err != nil {
 				fmt.Println(err)
@@ -58,10 +67,17 @@ func cleanInput(text string) []string {
 
 func getCommands() map[string]cliCommand {
 	return map[string]cliCommand{
+
 		"help": {
 			name:        "help",
 			description: "Display a help message",
 			callback:    commandHelp,
+		},
+
+		"explore": {
+			name:        "explore",
+			description: "Display a list of all the Pokemon located in the location",
+			callback:    commandExplore,
 		},
 
 		"map": {
